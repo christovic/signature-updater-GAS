@@ -30,3 +30,6 @@ Copy and paste the contents of src/main.html into a new html file in Google Apps
 Get your private key from the service account area that you made in step 2 and paste it in the constant `PRIVATE_KEY`. Do the same for the service account email address. 
 
 6. Click "Deploy" at the top right, click "New deployment". Click the cog next to "Select type", choose "Web app". Add a description, press "Deploy". Authorise access, then you can access the web interface with the link under "URL".
+
+[### How do I use it?](https://github.com/christovic/signature-updater-GAS/blob/main/HOWTO.md)
+
