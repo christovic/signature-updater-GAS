@@ -20,7 +20,7 @@ Give it [domain-wide delegation](https://developers.google.com/identity/protocol
 
 2. [Create a new Google Apps Script](https://script.google.com/home/projects/create).
 
-3. Press + next to "Libraries" on the lefthand sidebar. Use Google's apps-script-oauth2 ID (1B7FSrk5Zi6L1rSxxTDgDEUsPzlukDsi4KGuTMorsTQHhGBzBkMun4iDF), press "Look up", and press "Add".  
+3. Press + next to "Libraries" on the lefthand sidebar. Use Google's apps-script-oauth2 ID `1B7FSrk5Zi6L1rSxxTDgDEUsPzlukDsi4KGuTMorsTQHhGBzBkMun4iDF`, press "Look up", and press "Add".  
 Press + next to Services, select "Admin SDK API", and press "Add"
 
 4. Copy and paste the contents of src/Code.gs into Code.gs in Google Apps Script.  
@@ -29,3 +29,4 @@ Copy and paste the contents of src/main.html into a new html file in Google Apps
 5. Fill out your domain name at the top.  
 Get your private key from the service account area that you made in step 2 and paste it in the constant `PRIVATE_KEY`. Do the same for the service account email address. 
 
+6. Click "Deploy" at the top right, click "New deployment". Click the cog next to "Select type", choose "Web app". Add a description, press "Deploy". Authorise access, then you can access the web interface with the link under "URL".
