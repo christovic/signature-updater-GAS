@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://ssl.gstatic.com/docs/script/css/add-ons1.css"
+    />
+    <style>
+      input {
+        width: 100%;
+      }
+      form {
+        line-height: 30px;
+      }
+      .center {
+        margin: auto;
+        width: 90%;
+        padding: 10px;
+      }
+      td {
+        padding: 2px;
+      }
+      textarea {
+        resize: vertical;
+        width: 100%;
+        font-family: monospace;
+        height: 200px;
+      }
+    </style>
+    <title></title>
+    <script
+    src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+    </script>
+    <script>
+        var returnedData = null;
+        var complete = 0;
+        function sendValues(event) {
+          document.getElementById("loading").innerHTML = "Loading...";
+          document.getElementById("submitButton").disabled = true;
+          document.getElementById("loading").style = 'display: block;';
+          const data = new FormData(document.getElementById("emailForm"));
+          const value = Object.fromEntries(data.entries());
+          google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onFail).checkData(value);
+        }
+        function applySignatures(event) {
+          document.getElementById("submitButton").disabled = true;
+          document.getElementById("applyButton").disabled = true;
+          complete = 0;
+          document.getElementById("loading").innerHTML = `Completed ${complete} of ${returnedData['rawUserData'].length}`;
+          returnedData['rawUserData'].forEach(function(item){
+            setEmailTableStatus(item['email'], "...")
+            var sendData = {
+              "rawUserData": item,
+              "signatureHTML": returnedData["signatureHTML"]
+            }
+            google.script.run.withSuccessHandler(signatureAppliedOnSuccess).withFailureHandler(onFail).applySignatures(sendData);
+          })
+          
+        }
+        function updateSignatureExample() {
+          var signatureTemplateHTML = document.getElementById("signatureHTML").value;
+          if (returnedData != null && "rawUserData" in returnedData) {
+            signatureTemplateHTML = signatureTemplateHTML.replace('{user_full_name}', returnedData['rawUserData'][0]['full_name'])
+            signatureTemplateHTML = signatureTemplateHTML.replace('{user_job_title}', returnedData['rawUserData'][0]['job_title'])
+          }
+          document.getElementById("exampleSignature").innerHTML = signatureTemplateHTML;
+        }
+        function updateExample(email) {
+          for (let i = 0; returnedData['rawUserData'].length; i++) {
+            if (returnedData['rawUserData'][i]['email'] == email) {
+              var fullName = returnedData['rawUserData'][i]['full_name'];
+              var jobTitle = returnedData['rawUserData'][i]['job_title'];
+              break;
+            }
+          }
+          var signatureTemplateHTML = document.getElementById("signatureHTML").value;
+          signatureTemplateHTML = signatureTemplateHTML.replace('{user_full_name}', fullName)
+          signatureTemplateHTML = signatureTemplateHTML.replace('{user_job_title}', jobTitle)
+          document.getElementById("exampleSignature").innerHTML = signatureTemplateHTML;
+          setEmailTableStatus(email, "", "background-color: lightblue;", true)
+        }
+        function setEmailTableStatus(email, status, style = "", resetStyle = false) {
+          var table = document.getElementById('userTable');
+          var rowLength = table.rows.length;
+          for(var i=0; i<rowLength; i+=1){
+            var row = table.rows[i];
+            try {
+              var rowEmail = row.cells[0].innerHTML;
+              if (rowEmail == email) {
+                row.cells[3].innerHTML = status;
+                row.style = style;
+              } else {
+                if (resetStyle) {
+                  row.style = "";
+                }
+              }
+            } catch (err) {
+              continue
+            }
+          }
+        }
+        function signatureAppliedOnSuccess(response) {          
+          if (response['ok']) {
+            setEmailTableStatus(response['email'], "&check;", "background-color: lightgreen;");
+            complete += 1;
+          } else {
+            setEmailTableStatus(response['email'], "&cross;", "background-color: lightpink;");
+          }
+          document.getElementById("loading").innerHTML = `Completed ${complete} of ${returnedData['rawUserData'].length}`;
+          if (complete == returnedData['rawUserData'].length) {
+            document.getElementById("applyButton").disabled = false;
+            document.getElementById("submitButton").disabled = false;
+          }
+        }
+        function onSuccess(response) {
+          returnedData = response;
+          if (response['ok']) {
+            var table = "<table id=\"userTable\" style=\"width: 100%;\"><tr><th>Email</th><th>Name</th><th>Job Title</th><th>Success</th></tr>"
+            response['rawUserData'].forEach(function(item) {
+              table += `<tr onclick="updateExample('${item['email']}')"><td>${item['email']}</td><td>${item['full_name']}</td><td>${item['job_title']}</td><td></td><tr>`
+            })
+            document.getElementById("tableStore").innerHTML = table + "</table>";
+            document.getElementById("loading").innerHTML = "";
+            document.getElementById("applyButton").disabled = false;
+            document.getElementById("exampleSignature").innerHTML = response['exampleSignature'];
+            document.getElementById("submitButton").disabled = false;
+            returnedData['signatureHTML'] = document.getElementById("signatureHTML").value;
+          }
+        }
+        function onFail(response) {
+          document.getElementById("loading").innerHTML = response;
+          document.getElementById("submitButton").disabled = false;
+          document.getElementById("applyButton").disabled = false;
+        }
+    </script>
+  </head>
+  <body onload="updateSignatureExample()">
+    <div class=center>
+    <form id="emailForm">
+      <label for="groupEmail">Email of group to set</label><br />
+      <input type="text" id="groupEmail" name="groupEmail" /><br />
+      <label for="userEmailList">List of individual emails to set</label><br />
+      <textarea id="userEmailList" name="userEmailList"></textarea><br />
+      <label for="signatureHTML">Signature HTML</label><br />
+      <textarea id="signatureHTML" name="signatureHTML" onkeyup="updateSignatureExample()"><p style="font-size: 9pt; font-family: Arial, Helvetica, sans-serif; margin: 0;">
+    <b>{user_full_name}</b> {user_job_title}
+</p>
+<br>
+<p style="font-size: 14pt; font-weight: 700; font-family: Arial, Helvetica, sans-serif; margin: 0;">
+    Company Name
+</p>
+<p style="font-size: 9pt; font-family: Arial, Helvetica, sans-serif; margin: 0;">
+    308 Negra Arroyo Lane, Albuquerque, New Mexico. 87104
+</p>
+<p style="font-size: 9pt; font-family: Arial, Helvetica, sans-serif; margin: 0;">
+    <b>T</b>  +1 202-918-2132  <b>
+</p>
+<p style="font-size: 9pt; font-family: Arial, Helvetica, sans-serif; margin: 0;">
+    <a href="https://www.example.com">www.example.com</a>
+</p>
+</textarea><br>
+      <br>
+    </form>
+    <button id="submitButton" onclick="sendValues()">Prepare</button>
+    <button id="applyButton" onclick="applySignatures()" disabled>Apply</button>
+    <div style="height: 20px"></div>
+    <p id="exampleSignatureLabel">Example signature:</p>
+    <div id="exampleSignature" style="outline: 1px solid black; padding: 5px;"></div>
+    <br>
+    <p id="loading" style="display: none;">Loading...</p>
+    <br>
+    <div id="tableStore"></div>
+    </div>
+  </body>
+</html>
