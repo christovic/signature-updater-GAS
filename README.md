@@ -31,5 +31,5 @@ Get your private key from the service account area that you made in step 2 and p
 
 6. Click "Deploy" at the top right, click "New deployment". Click the cog next to "Select type", choose "Web app". Add a description, press "Deploy". Authorise access, then you can access the web interface with the link under "URL".
 
-[### How do I use it?](https://github.com/christovic/signature-updater-GAS/blob/main/HOWTO.md)
+###[How do I use it?](https://github.com/christovic/signature-updater-GAS/blob/main/HOWTO.md)
 
